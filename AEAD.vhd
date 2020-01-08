@@ -55,25 +55,22 @@ entity AEAD is
         clk             : in  std_logic;
         rst             : in  std_logic;
         --! Publica data ports
-        pdi_a_data      : in  std_logic_vector(PW             -1 downto 0);
-        pdi_b_data      : in  std_logic_vector(PW             -1 downto 0);
+        pdi_data        : in  std_logic_vector(PW * 2             -1 downto 0);
 	    pdi_valid       : in  std_logic;
-        pdi_last        : in  std_logic;
+        --pdi_last        : in  std_logic;
         pdi_ready       : out std_logic;
         --! Secret data ports
-        sdi_a_data      : in  std_logic_vector(SW             -1 downto 0);
-        sdi_b_data      : in  std_logic_vector(SW             -1 downto 0);
+        sdi_data        : in  std_logic_vector(SW * 2             -1 downto 0);
         sdi_valid       : in  std_logic;
-        sdi_last        : in  std_logic;
+        --sdi_last        : in  std_logic;
         sdi_ready       : out std_logic;
         --! Data out ports
-        do_a_data       : out std_logic_vector(PW             -1 downto 0);
-        do_b_data       : out std_logic_vector(PW             -1 downto 0);
+        do_data         : out std_logic_vector(PW * 2             -1 downto 0);
         do_ready        : in  std_logic;
         do_valid        : out std_logic;
 
 		rdi_data        : in  std_logic_vector(RW                 -1 downto 0);
-		rdi_valid	      : in  std_logic;
+		rdi_valid	    : in  std_logic;
 		rdi_ready       : out std_logic
 
 		  --state_debug     : out std_logic_vector(35 downto 0)
@@ -140,33 +137,33 @@ architecture structure of AEAD is
     signal cmd_ready_FIFO_out       : std_logic;
 
 	 signal mask1, mask2	: std_logic_vector(7 downto 0);
-	-- signal pdi_data_a, pdi_data_b : std_logic_vector(PW - 1 downto 0);
-	-- signal sdi_data_a, sdi_data_b : std_logic_vector(SW - 1 downto 0);
-	-- signal do_data_a, do_data_b : std_logic_vector(PW - 1 downto 0);
+	 signal pdi_data_a, pdi_data_b : std_logic_vector(PW - 1 downto 0);
+	 signal sdi_data_a, sdi_data_b : std_logic_vector(SW - 1 downto 0);
+	 signal do_data_a, do_data_b : std_logic_vector(PW - 1 downto 0);
 
     --==========================================================================
 begin
 
--- share separation and recombination
+     -- share separation and recombination
 
-   --pdi_data_a <= pdi_data(PW * 2 - 1 downto PW);
-	-- pdi_data_b <= pdi_data(PW - 1 downto 0);
-	--
-	-- sdi_data_a <= sdi_data(SW * 2 - 1 downto SW);
-	-- sdi_data_b <= sdi_data(SW - 1 downto 0);
-	--
-	-- do_data <= do_data_a & do_data_b;
+     pdi_data_a <= pdi_data(PW * 2 - 1 downto PW);
+	 pdi_data_b <= pdi_data(PW - 1 downto 0);
+	
+	 sdi_data_a <= sdi_data(SW * 2 - 1 downto SW);
+	 sdi_data_b <= sdi_data(SW - 1 downto 0);
+	
+	 do_data <= do_data_a & do_data_b;
 
     Inst_PreProcessor: entity work.PreProcessor_mod(PreProcessor)
         PORT MAP(
                 clk             => clk                                     ,
                 rst             => rst                                     ,
-                pdi_data_a      => pdi_a_data                              ,
-                pdi_data_b      => pdi_b_data                              ,
+                pdi_data_a      => pdi_data_a                              ,
+                pdi_data_b      => pdi_data_b                              ,
 			    pdi_valid       => pdi_valid                               ,
                 pdi_ready       => pdi_ready                               ,
-                sdi_data_a      => sdi_a_data                              ,
-			    sdi_data_b      => sdi_b_data                              ,
+                sdi_data_a      => sdi_data_a                              ,
+			    sdi_data_b      => sdi_data_b                              ,
                 sdi_valid       => sdi_valid                               ,
                 sdi_ready       => sdi_ready                               ,
                 key_a           => key_cipher_in_a                         ,
@@ -247,8 +244,8 @@ begin
                 cmd             => cmd_FIFO_out                            ,
                 cmd_valid       => cmd_valid_FIFO_out                      ,
                 cmd_ready       => cmd_ready_FIFO_out                      ,
-                do_data_a       => do_a_data                               ,
-                do_data_b       => do_b_data                               ,
+                do_data_a       => do_data_a                               ,
+                do_data_b       => do_data_b                               ,
                 do_valid        => do_valid                                ,
                 do_ready        => do_ready                                ,
                 bdo_valid_bytes => bdi_valid_bytes_cipher_out              ,

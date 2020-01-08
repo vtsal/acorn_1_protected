@@ -87,6 +87,24 @@ architecture structure of CipherCore is
         signal sel_decrypt   :  std_logic;
 		signal tag_match     :  std_logic;
 		signal sel_M         :  std_logic_vector(2 downto 0);
+		
+		-- Added by Behnaz ------------------------------------
+        --=====================================================
+        signal     e_tag_en         : std_logic;
+        signal     e_tag_rst        : std_logic;
+        signal     c_tag_en         : std_logic;
+        signal     c_tag_rst        : std_logic;
+        signal     raReg_en         : std_logic;
+        signal     rbReg_en         : std_logic;
+        signal     c1a_en           : std_logic;
+        signal     c2a_en           : std_logic;
+        signal     c1b_en           : std_logic;
+        signal     c2b_en           : std_logic;
+        signal     d1a_en           : std_logic;
+        signal     d2a_en           : std_logic;
+        signal     d1b_en           : std_logic;
+        signal     d2b_en           : std_logic;
+        --=====================================================
 -------------------------------------------------------------------
 
 begin
@@ -117,7 +135,25 @@ begin
             sel_decrypt         => sel_decrypt,
             tag_match           => tag_match,
             sel_M               => sel_M,
-            rand                => rdi_data
+            rand                => rdi_data,
+            
+            -- Added by Behnaz ------------------------------------
+            --=====================================================
+            e_tag_en       => e_tag_en         ,
+            e_tag_rst      => e_tag_rst        ,
+            c_tag_en       => c_tag_en         ,
+            c_tag_rst      => c_tag_rst        ,
+            raReg_en       => raReg_en         ,
+            rbReg_en       => rbReg_en         ,
+            c1a_en         => c1a_en           ,
+            c2a_en         => c2a_en           ,
+            c1b_en         => c1b_en           ,
+            c2b_en         => c2b_en           ,
+            d1a_en         => d1a_en           ,
+            d2a_en         => d2a_en           ,
+            d1b_en         => d1b_en           ,
+            d2b_en         => d2b_en
+            --=====================================================	
     );
 
 	Controller: entity work.ACORN_Control(behavioral)
@@ -160,7 +196,25 @@ begin
             sel_M               => sel_M,
             end_of_block        => end_of_block,
             rdi_valid           => rdi_valid,
-            rdi_ready           => rdi_ready
+            rdi_ready           => rdi_ready,
+            
+            -- Added by Behnaz ------------------------------------
+            --=====================================================
+            e_tag_en       => e_tag_en         ,
+            e_tag_rst      => e_tag_rst        ,
+            c_tag_en       => c_tag_en         ,
+            c_tag_rst      => c_tag_rst        ,
+            raReg_en       => raReg_en         ,
+            rbReg_en       => rbReg_en         ,
+            c1a_en         => c1a_en           ,
+            c2a_en         => c2a_en           ,
+            c1b_en         => c1b_en           ,
+            c2b_en         => c2b_en           ,
+            d1a_en         => d1a_en           ,
+            d2a_en         => d2a_en           ,
+            d1b_en         => d1b_en           ,
+            d2b_en         => d2b_en
+            --=====================================================	
     );
 
 end structure;

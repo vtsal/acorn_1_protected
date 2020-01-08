@@ -41,7 +41,8 @@ package design_pkg is
     --! I/O parameters
     constant PW             : integer := 8;
     constant SW             : integer := 8;
-    constant RW             : integer := 15;
+    --constant RW             : integer := 15;
+    constant RW             : integer := 64; -- Added by Behnaz
     constant PWdiv8         : integer := PW/8;
     constant SWdiv8         : integer := SW/8;
     constant LSBYTES        : integer := PW/8+1;---log2(w/8);

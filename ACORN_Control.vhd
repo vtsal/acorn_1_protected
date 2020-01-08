@@ -62,7 +62,25 @@ entity ACORN_Control is
         sel_M           : out  std_logic_vector(2 downto 0);
         end_of_block    : out std_logic;
         rdi_valid       : in  std_logic;
-        rdi_ready       : out std_logic
+        rdi_ready       : out std_logic;
+        
+        -- Added by Behnaz ------------------------------------
+        --=====================================================
+        e_tag_en       : out std_logic;
+        e_tag_rst      : out std_logic;
+        c_tag_en       : out std_logic;
+        c_tag_rst      : out std_logic;
+        raReg_en       : out std_logic;
+        rbReg_en       : out std_logic;
+        c1a_en         : out std_logic;
+        c2a_en         : out std_logic;
+        c1b_en         : out std_logic;
+        c2b_en         : out std_logic;
+        d1a_en         : out std_logic;
+        d2a_en         : out std_logic;
+        d1b_en         : out std_logic;
+        d2b_en         : out std_logic
+        --=====================================================
     );
 
 end entity ACORN_Control;
@@ -73,8 +91,10 @@ architecture behavioral of ACORN_Control is
                     S_RESET, S_WAIT_START, S_WAIT_KEY, S_INIT_KEY, S_INIT_NPUB,
                     S_INIT_KEY2, S_PROC_AD, S_PROC_ADPAD1, S_PROC_ADPAD0,
                     S_PROC_PT, S_PROC_DATPAD1, S_PROC_DATPAD0, S_FINAL,
-                    S_WAIT_MSG_AUTH, S_INIT_NPUB1, S_PROC_AD1, S_PROC_PT1,
-                    S_PROC_PT2, S_FINAL1_DEC
+                    --S_WAIT_MSG_AUTH, 
+                    S_INIT_NPUB1, S_PROC_AD1, S_PROC_PT1,
+                    S_PROC_PT2, S_FINAL1_DEC,
+                    verify_tag1, verify_tag2, verify_tag3, verify_tag4, verify_tag5, verify_tag6 -- Added by Behnaz
                 );
     signal state       : t_state;
     signal state_next  : t_state;
@@ -161,6 +181,24 @@ begin
         rdi_ready      <= '0';
 
 		bdo_valid_bytes<=(others=>'1');
+		
+		-- Added by Behnaz ------------------------------------
+        --=====================================================
+		e_tag_en      <= '0';
+		e_tag_rst     <= '0';
+		c_tag_en      <= '0';
+		c_tag_rst     <= '0';
+		c1a_en        <= '0';
+		raReg_en      <= '0';
+		c2a_en        <= '0';
+        c1b_en        <= '0';
+        rbReg_en      <= '0'; 
+        d1a_en        <= '0';
+        c2b_en        <= '0';
+        d1b_en        <= '0';
+        d2a_en        <= '0'; 
+        d2b_en        <= '0'; 
+		--=====================================================
 
         case state is
 
@@ -170,6 +208,12 @@ begin
 				rst_StateReg	<= '1';
                 auth_fail_next  <= '0';
                 wait_next   	<= '0';
+                
+                -- Added by Behnaz ------------------------------------
+                --=====================================================
+                e_tag_rst     <= '1'; 
+                c_tag_rst     <= '1';
+                --=====================================================
 
             when S_WAIT_START =>
                 -- if (bdi_valid = '1') then
@@ -535,6 +579,11 @@ begin
                                 if (bdi_valid = '1') then
                                     wait_next   <= '0';
                                     bdi_ready   <= '1';
+                                    -- Added by Behnaz ------------------------------------
+                                    --=====================================================
+                                    e_tag_en  <= '1';
+                                    c_tag_en  <= '1';
+                                    --=====================================================
                                     sel_bdi     <= '1';
                                     en_bdiReg   <= '1';
                                     L_bdiReg    <= '1';
@@ -584,21 +633,31 @@ begin
                         sel_M		<= "100";
                         en_bdiReg   <= '1';
                         en_StateReg <= '1';
+                        -- Added by Behnaz ------------------------------------
+                        --=====================================================
+                        c_tag_en  <= '1';
+                        --=====================================================
                         if (tag_match = '0') then
                             auth_fail_next  <= '1';
                         end if;
                         if (count_r = FINAL_COUNT-1) then
-                            if (msg_auth_ready = '1')then
-                                msg_auth_valid  <= '1';
-                                if (tag_match = '0') or (auth_fail_r = '1') then
-                                    msg_auth   <= '0';
-                                else
-                                    msg_auth   <= '1';
-                                end if;
-                                state_next  <= S_RESET;
-                            else
-                                state_next  <= S_WAIT_MSG_AUTH;
-                            end if;
+--                            if (msg_auth_ready = '1')then
+--                                msg_auth_valid  <= '1';
+--                                if (tag_match = '0') or (auth_fail_r = '1') then
+--                                    msg_auth   <= '0';
+--                                else
+--                                    msg_auth   <= '1';
+--                                end if;
+--                                state_next  <= S_RESET;
+--                            else
+--                                state_next  <= S_WAIT_MSG_AUTH; 
+--                            end if;
+
+                             -- Added by Behnaz ------------------------------------
+                            --=====================================================
+                            state_next  <= verify_tag1;
+                            --=====================================================
+                            
                         elsif (count_r(2 downto 0) = "111") then
                             state_next  <= S_FINAL;
                             count_next  <= count_r + 1;
@@ -610,14 +669,52 @@ begin
                     end if;
                 end if;
 
-            when S_WAIT_MSG_AUTH =>
-                if (msg_auth_ready = '1')then
-                    msg_auth_valid  <= '1';
-                    if (auth_fail_r = '0') then
-                        msg_auth   <= '1';
+--            when S_WAIT_MSG_AUTH =>
+--                if (msg_auth_ready = '1')then
+--                    msg_auth_valid  <= '1';
+--                    if (auth_fail_r = '0') then
+--                        msg_auth   <= '1';
+--                    end if;
+--                    state_next  <= S_RESET;
+--                end if;
+                
+                
+              --- Added by Behnaz ---------------------------------------------------------------------------
+              --=============================================================================================     
+              when verify_tag1 =>
+                    c1a_en      <= '1'; 
+                    state_next  <= verify_tag2;
+                        
+              when verify_tag2 => 
+                    raReg_en    <= '1';   
+                    c2a_en      <= '1';
+                    c1b_en      <= '1';
+                    state_next  <= verify_tag3;
+                        
+              when verify_tag3 => 
+                    rbReg_en    <= '1'; 
+                    d1a_en      <= '1';
+                    c2b_en      <= '1'; 
+                    state_next  <= verify_tag4;
+                
+              when verify_tag4 =>                              
+                    d1b_en      <= '1';
+                    d2a_en      <= '1';
+                    state_next  <= verify_tag5;
+                    
+              when verify_tag5 =>                              
+                    d2b_en      <= '1';
+                    state_next  <= verify_tag6;
+              
+              when verify_tag6 =>
+                    if (msg_auth_ready = '1') then
+                        msg_auth_valid  <= '1'; 
+                        msg_auth        <= tag_match;
+                        state_next      <= S_RESET;
+                    else
+                        state_next      <= verify_tag6;
                     end if;
-                    state_next  <= S_RESET;
-                end if;
+              --=============================================================================================  
 
         end case;
 
